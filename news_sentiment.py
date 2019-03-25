@@ -249,23 +249,39 @@ def run():
     '''
 
     arguments = sys.argv[1:]
-    if len(arguments) < 4:
-        print("Expected at least four arguments: space delimited keywords,\n"
-              "start year, end year, and maximum number of records per file.")
+    if len(arguments) < 5:
+        print("Expected at least five arguments: space delimited keywords,\n"
+              "inclusive upper bound year, inclusive lower bound year,\n"
+              "year increment, and maximum number of records per file.")
         sys.exit()
     try:
-        max_results = int(arguments.pop())
+        max_results = float(arguments.pop())
+    except TypeError:
+        print("Expected integer or float for the fifth argument: maximum "
+              "number of records per file.")
+        sys.exit()
+    try:
+        year_incr = int(arguments.pop())
+    except TypeError:
+        print("Expected integer for the fourth argument: year increment.")
+        sys.exit()
+    try:
         year_max = int(arguments.pop())
+    except TypeError:
+        print("Expected integer for the third argument: inclusive upper bound"
+              " year.")
+        sys.exit()
+    try:
         year_min = int(arguments.pop())
     except TypeError:
-        print("Expected integers for the last three arguments: start year,\n"
-              "end year, and maximum number of records per file.")
+        print("Expected integer for the second argument: inclusive lower bound"
+              " year.")
         sys.exit()
     keywords = arguments
-    num_exports = (year_max - year_min) // 5 + 1
+    num_exports = (year_max - year_min) // year_incr + 1
     for export in range(1, num_exports + 1):
-        temp_min = year_min + 5 * (export - 1)
-        temp_max = min(temp_min + 4, year_max)
+        temp_min = year_min + year_incr * (export - 1)
+        temp_max = min(temp_min + year_incr - 1, year_max)
         csv_path = "-".join([keywords[0], str(temp_min), str(temp_max)])+".csv"
         csv_data = ChroniclingAmerica(keywords, temp_min, temp_max,max_results)
         csv_data.news.to_csv(csv_path, index=False, escapechar="\\")
@@ -299,6 +315,7 @@ def _log_progress(path, keywords, year_min, year_max, size, time, export, \
         if write_or_append == "w":
             log.write(log_data.to_csv(header=True, index=False))
         else:
+            log.write("\n")
             log.write(log_data.to_csv(header=False, index=False))
     message = ("Collected news and analyzed sentiment from " + str(year_min) +
                " through " + str(year_max) + " in file " + str(export) + " of "
