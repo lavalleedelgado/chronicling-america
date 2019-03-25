@@ -315,7 +315,6 @@ def _log_progress(path, keywords, year_min, year_max, size, time, export, \
         if write_or_append == "w":
             log.write(log_data.to_csv(header=True, index=False))
         else:
-            log.write("\n")
             log.write(log_data.to_csv(header=False, index=False))
     message = ("Collected news and analyzed sentiment from " + str(year_min) +
                " through " + str(year_max) + " in file " + str(export) + " of "
